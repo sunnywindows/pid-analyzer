@@ -1,0 +1,10 @@
+.env
+.env.*
+!.env.example
+.venv/
+.validation-deps/
+__pycache__/
+*.pyc
+*.log
+validation-result.json
+test-results/

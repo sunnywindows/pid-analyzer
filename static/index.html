@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>P&ID 图纸分析工具</title>
+  <script>window.PID_MODE = "__PID_MODE__";</script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E⛁%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">⛁</span>
+      <div>
+        <h1>P&ID 图纸分析工具</h1>
+        <p>上传管道及仪表流程图，自动提取设备、仪表、管线信息</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- 左侧：上传与配置 -->
+    <section class="panel left">
+      <div class="card">
+        <h2>1. 上传图纸</h2>
+        <div id="dropzone" class="dropzone" tabindex="0">
+          <input id="fileInput" type="file" accept=".png,.jpg,.jpeg,.bmp,.webp,.tif,.tiff,.pdf" hidden />
+          <div class="dz-icon">⬆</div>
+          <p class="dz-main">拖拽图纸到这里，或 <span class="link">点击选择文件</span></p>
+          <p class="dz-sub">支持 PNG / JPG / BMP / PDF（多页自动分页识别）</p>
+        </div>
+        <div id="fileInfo" class="file-info hidden">
+          <span id="fileName" class="file-name"></span>
+          <button id="removeFile" class="btn-ghost" type="button">移除</button>
+        </div>
+        <div id="previewWrap" class="preview hidden">
+          <img id="preview" alt="图纸预览" />
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>2. 分析设置</h2>
+        <label class="field" id="engineField">
+          <span class="field-label">分析引擎</span>
+          <select id="engine">
+            <option value="auto" selected>自动（有 Key 用 AI，无 Key 用本地智能识别）</option>
+            <option value="ai">AI 视觉大模型</option>
+            <option value="local">本地智能识别（深度学习 OCR + 图元检测）</option>
+          </select>
+        </label>
+
+        <div id="aiSettings">
+          <div class="hint">支持 OpenAI 兼容的视觉模型接口。请选择服务商并填写对应的 API Key。</div>
+          <label class="field">
+            <span class="field-label">服务商预设</span>
+            <select id="provider">
+              <option value="">— 选择服务商自动填充 —</option>
+              <option value="qwen">通义千问 VL（阿里，国内直连·推荐）</option>
+              <option value="glm">智谱 GLM-4V（国内直连·推荐）</option>
+              <option value="deepseek">DeepSeek（国内直连·不支持视觉）</option>
+              <option value="kimi">Kimi 视觉（Moonshot）</option>
+              <option value="openai">OpenAI</option>
+              <option value="custom">自定义</option>
+            </select>
+          </label>
+          <label class="field">
+            <span class="field-label">API Key</span>
+            <input id="apiKey" type="password" placeholder="sk-..." autocomplete="off" />
+          </label>
+          <div class="field-row">
+            <label class="field grow">
+              <span class="field-label">Base URL</span>
+              <input id="baseUrl" type="text" placeholder="https://api.openai.com/v1" />
+            </label>
+            <label class="field grow">
+              <span class="field-label">模型名称</span>
+              <input id="model" type="text" placeholder="如 qwen-vl-max / glm-4v-plus" />
+            </label>
+          </div>
+        </div>
+
+        <button id="analyzeBtn" class="btn-primary" type="button">开始分析</button>
+      </div>
+    </section>
+
+    <!-- 右侧：结果 -->
+    <section class="panel right">
+      <div id="placeholder" class="placeholder">
+        <div class="ph-icon">🗺</div>
+        <p>上传图纸并点击「开始分析」后，结果将显示在这里</p>
+      </div>
+
+      <div id="result" class="hidden">
+        <div class="result-head">
+          <div id="summaryCard" class="summary"></div>
+          <button id="exportBtn" class="btn-primary" type="button">⬇ 导出 Excel</button>
+        </div>
+
+        <div class="meta-bar" id="metaBar"></div>
+
+        <div class="flow-box" id="flowBox"></div>
+
+        <div class="tabs" id="tabs">
+          <button class="tab active" data-tab="equipment">设备 <span id="cntEquipment" class="cnt">0</span></button>
+          <button class="tab" data-tab="instruments">仪表 <span id="cntInstruments" class="cnt">0</span></button>
+          <button class="tab" data-tab="pipelines">管线 <span id="cntPipelines" class="cnt">0</span></button>
+        </div>
+
+        <div class="table-wrap">
+          <table id="dataTable">
+            <thead></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="findings" id="findings"></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="loading" class="loading hidden">
+    <div class="spinner"></div>
+    <p id="loadingText">正在分析图纸…</p>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

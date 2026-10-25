@@ -1,0 +1,12 @@
+# Render 部署描述文件：在 Render Dashboard 选 "Blueprint" 并指向本仓库即可
+services:
+  - type: web
+    name: pid-analyzer
+    runtime: docker
+    plan: free
+    region: oregon
+    autoDeploy: true
+    healthCheckPath: /
+    envVars:
+      - key: PID_MODE
+        value: ai
